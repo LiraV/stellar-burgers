@@ -48,12 +48,16 @@ const ConstructorSlice = createSlice({
     setBun(state, action: PayloadAction<TIngredient>) {
       state.bun = action.payload;
     },
-    addIngredient(state, action: PayloadAction<TIngredient>) {
-      const ingredient = action.payload;
-      state.ingredients.push({
-        ...ingredient,
-        id: `${uuid()}`
-      } as TConstructorIngredient);
+    addIngredient: {
+      reducer(state, action: PayloadAction<TConstructorIngredient>) {
+        const ingredient = action.payload;
+        state.ingredients.push(action.payload);
+      },
+      prepare(ingredient: TIngredient) {
+        return {
+          payload: { ...ingredient, id: uuid() } as TConstructorIngredient
+        };
+      }
     },
     removeIngredientById(state, action: PayloadAction<string>) {
       state.ingredients = state.ingredients.filter(

@@ -2,7 +2,7 @@ import { Preloader } from '@ui';
 import { FeedUI } from '@ui-pages';
 import { TOrder } from '@utils-types';
 import { FC, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from '../../services/store';
 import { AppDispatch } from '../../services/store';
 import {
   fetchFeed,
@@ -17,7 +17,7 @@ import {
 
 export const Feed: FC = () => {
   /** TODO: взять переменную из стора */
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const orders: TOrder[] = useSelector(selectFeed);
   const loading = useSelector(selectFeedLoading);
   const error = useSelector(selectFeedError);

@@ -1,6 +1,6 @@
 import { FC, SyntheticEvent, useState } from 'react';
 import { RegisterUI } from '@ui-pages';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from '../../services/store';
 import { AppDispatch } from '../../services/store';
 import { useNavigate } from 'react-router-dom';
 import { registerThunk, selectUserLoading } from '../../slices/UserSlice';
@@ -11,7 +11,7 @@ export const Register: FC = () => {
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState<string>('');
 
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const loading = useSelector(selectUserLoading);
 

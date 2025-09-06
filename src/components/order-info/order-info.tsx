@@ -3,9 +3,13 @@ import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
 import { TIngredient, TOrder } from '@utils-types';
 import { useParams } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector } from '../../services/store';
 import { AppDispatch } from '../../services/store';
-import { selectIngredients } from '../../slices/IngredientsSlice';
+import {
+  fetchIngredients,
+  selectIngredients,
+  selectIngredientsLoading
+} from '../../slices/IngredientsSlice';
 import { selectFeed } from '../../slices/FeedSlice';
 import { selectProfileOrders } from '../../slices/ProfileOrdersSlice';
 import { getOrderByNumberApi } from '@api';
@@ -14,9 +18,10 @@ export const OrderInfo: FC = () => {
   /** TODO: взять переменные orderData и ingredients из стора */
   const { number } = useParams<{ number: string }>();
   const orderNumber = Number(number);
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
 
   const ingredients: TIngredient[] = useSelector(selectIngredients);
+  const ingredientsLoading = useSelector(selectIngredientsLoading);
 
   const feedOrders = useSelector(selectFeed);
   const profileOrders = useSelector(selectProfileOrders);
@@ -29,7 +34,13 @@ export const OrderInfo: FC = () => {
   const [errorDirect, setErrorDirect] = useState<string | null>(null);
 
   useEffect(() => {
-    if (inFeed || inProfile || loadingDirect || orderDirect) return;
+    if (!ingredients.length && !ingredientsLoading) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, ingredients.length, ingredientsLoading]);
+
+  useEffect(() => {
+    if (inFeed || inProfile) return;
     let canceled = false;
     (async () => {
       try {
@@ -87,6 +98,7 @@ export const OrderInfo: FC = () => {
 
     return {
       ...orderData,
+      name: orderData.name,
       ingredientsInfo,
       date,
       total

@@ -20,13 +20,13 @@ import {
 } from '@pages';
 import { Modal, IngredientDetails, AppHeader, OrderInfo } from '@components';
 import { ProtectedRoute } from '../protected-route.tsx/ProtectedRoute';
-import { useDispatch } from 'react-redux';
+import { useDispatch } from '../../services/store';
 import { AppDispatch } from '../../services/store';
 import { useEffect } from 'react';
 import { getUserThunk, setAuthChecked } from '../../slices/UserSlice';
 
 const App = () => {
-  const dispatch = useDispatch<AppDispatch>();
+  const dispatch = useDispatch();
   const location = useLocation();
   const navigate = useNavigate();
 
