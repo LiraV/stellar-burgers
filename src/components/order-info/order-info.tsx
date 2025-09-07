@@ -1,21 +1,66 @@
-import { FC, useMemo } from 'react';
+import { FC, useMemo, useState, useEffect } from 'react';
 import { Preloader } from '../ui/preloader';
 import { OrderInfoUI } from '../ui/order-info';
-import { TIngredient } from '@utils-types';
+import { TIngredient, TOrder } from '@utils-types';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from '../../services/store';
+import { AppDispatch } from '../../services/store';
+import {
+  fetchIngredients,
+  selectIngredients,
+  selectIngredientsLoading
+} from '../../slices/IngredientsSlice';
+import { selectFeed } from '../../slices/FeedSlice';
+import { selectProfileOrders } from '../../slices/ProfileOrdersSlice';
+import { getOrderByNumberApi } from '@api';
 
 export const OrderInfo: FC = () => {
   /** TODO: взять переменные orderData и ingredients из стора */
-  const orderData = {
-    createdAt: '',
-    ingredients: [],
-    _id: '',
-    status: '',
-    name: '',
-    updatedAt: 'string',
-    number: 0
-  };
+  const { number } = useParams<{ number: string }>();
+  const orderNumber = Number(number);
+  const dispatch = useDispatch();
 
-  const ingredients: TIngredient[] = [];
+  const ingredients: TIngredient[] = useSelector(selectIngredients);
+  const ingredientsLoading = useSelector(selectIngredientsLoading);
+
+  const feedOrders = useSelector(selectFeed);
+  const profileOrders = useSelector(selectProfileOrders);
+
+  const inFeed = feedOrders.find((order) => order.number === orderNumber);
+  const inProfile = profileOrders.find((order) => order.number === orderNumber);
+
+  const [orderDirect, setOrderDirect] = useState<TOrder | null>(null);
+  const [loadingDirect, setLoadingDirect] = useState(false);
+  const [errorDirect, setErrorDirect] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!ingredients.length && !ingredientsLoading) {
+      dispatch(fetchIngredients());
+    }
+  }, [dispatch, ingredients.length, ingredientsLoading]);
+
+  useEffect(() => {
+    if (inFeed || inProfile) return;
+    let canceled = false;
+    (async () => {
+      try {
+        setLoadingDirect(true);
+        setErrorDirect(null);
+        const res = await getOrderByNumberApi(orderNumber);
+        if (!canceled) setOrderDirect(res.orders?.[0] ?? null);
+      } catch (error: any) {
+        if (!canceled)
+          setErrorDirect(error?.message ?? 'Ошибка загрузки страницы заказа');
+      } finally {
+        if (!canceled) setLoadingDirect(false);
+      }
+    })();
+    return () => {
+      canceled = true;
+    };
+  }, [orderNumber, inFeed, inProfile, loadingDirect, orderDirect]);
+
+  const orderData = inFeed ?? inProfile ?? orderDirect ?? null;
 
   /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
@@ -53,6 +98,7 @@ export const OrderInfo: FC = () => {
 
     return {
       ...orderData,
+      name: orderData.name,
       ingredientsInfo,
       date,
       total
