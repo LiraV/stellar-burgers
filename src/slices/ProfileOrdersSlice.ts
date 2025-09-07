@@ -9,7 +9,7 @@ type ProfileOrdersState = {
   error: string | null;
 };
 
-const initialState: ProfileOrdersState = {
+export const initialState: ProfileOrdersState = {
   orders: [],
   isLoading: false,
   error: null
